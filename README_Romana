@@ -1,0 +1,146 @@
+Buse Elena-Cristina
+321CA
+
+
+Mentiune: Am abordat si bonusul.
+
+Prima parte
+
+
+--deviation--
+
+-functia deviation apeleaza functia deviation-help si calculeaza deviatia facand
+suma diferentelor in valoare absoluta dintre valorile functiei (+ (* x x) x 1) in 
+fiecare element din RANGE --SAMPLES-- si valorile lui ast in fiecare punct din range
+(obtinute cu ajutorul functiei deviation-helper)
+
+-functia deviation-helper obtine lista de valoari ale unui ast in fiecare punct din RANGE, astfel:
+1.  --(eval `((lambda (x) ,ast) ,point))-- se evalueaza ast-ul intr-un punct--point--
+
+    --`(backquote) adaugat in fata expresiei lambda alaturi de ,(quasiquote) din fata expresiei care
+	urmeaza sa fie evaluata--ast-- precum si din fata valorii pe care o vor prelua variabilele din
+	expresie creeaza contextul favorabil pentru aplicarea functiei eval
+
+2. (map (lambda(point) (eval `((lambda (x) ,ast) ,point))) RANGE) --se obtine lista de valori ale ast-ului aplicand 
+functia anonima lambda(care primeste ca parametru punctul in care se va evalua ast-ul) asupra fiecare element din RANGE
+
+
+--size-
+
+--functia size este recursiva pe stiva, astfel: 
+Avand in vedere ca un ast este reprezentat printr-o lista cu 3 elemente
+-radacina, subarbore stang si subarbore drept- am procedat astfel:
+
+Conditiile de oprire: Daca ast-ul e terminal--nu e lista-- dimensiunea sa este 1
+			   Daca ast-ul e lista vida atunci dimensiunea e 0
+
+Altfel, se avanseaza in ast: daca unul dintre subarbori e o lista atunci
+size devine dimensiunea restului ast-ului adunata cu dimensiunea listei
+respectiv, daca nu, dimesiunea se mareste cu 1
+
+
+Precizari:
+
+Evolutia dureaza cam 2-3 minute pentru o populatie de 50 si 50 de generatii si se obtine de cele mai multe ori
+individul cautat pentru aceste valori. Un exemplu: 
+All 26 tests passed!
+((+ (+ 1 x) (* x x))
+ 998.5999999999955
+ 4.440892098500626e-016) 
+
+Partea a doua
+
+Precizari:
+Am abordat rezolvarea astfel:
+Am adaugat in TERMINALS cativa terminali cu tipurile 360 si 2.0 din care voi alege
+in functie de tipul functiei alese aleator. Acei terminali pot avea alte valori.
+De asemenea, tipul functiilor din FUNCTIONS poate fi orice numar intre 1 si 360(pentru rotate)
+si orice numar din intervalul (0, 2.0)--pentru scale.
+
+Pentru a se obtine indivizi mai lungi si mai complicati trebuie rulat de mai multe ori.
+Un exemplu de individ mai complicat(pentru DEPH 6).
+
+(above (rotate 90 .) (rotate 80 .))
+
+(overlay
+ (beside
+  (beside . (above (above . .) (beside (above . .) .)))
+  (scale 1.0 .))
+ .)
+
+(beside (overlay . (rotate 80 .)) (rotate 90 .))
+
+. este o imagine
+
+
+
+Am redefinit functiile generate, modify si modify-random si deviation.
+
+--deviation
+
+-calculeaza "diferenta" intre 2 ast-uri(evalueaza un ast si apleleaza
+ deviation-help)
+-deviation-help calculeaza "diferenta" intre o imagine si SAMPLE
+Se calculeaza deviatia ca fiind suma  patratelor diferentelor pe cele 3 componente
+cromatice; in cazul in care imaginile nu au aceeasi dimensiune, imaginea se aduce la
+dimensiunea lui SAMPLE prin plasarea sa in centrul de greutate al unui fundal alb
+--patrat--de dimensiunea lui SAMPLE cu ajutorul functiei place-image
+ 
+Se procedeaza astfel:
+1. se obtin listele cu componentele culorilor rosu, verde si albastru--RED,
+GREEN,BLUE-- pentru SAMPLE
+2.se obtin sumele patratelor diferentelor pe cele 3 componente cromatice
+intre o imagine oarecare si SAMPLE--get-red-sum, get-green-sum, get-blue-sum--
+
+--generate
+Cea mai generala abordare la care am reusit sa ajung este urmatoarea:
+
+Functia generate este implementata pentru functii cu 2 parametrii
+care intorc acelasi tip(tipul este al doilea element din lista care
+defineste o functie din FUNCTIONS).
+
+Daca am ales o functie definita pe cele doua tipuri si primul
+tip nu este la fel cu cel pe care il intoarce functia, atunci va trebui sa 
+aleg din terminalii care sunt de tipul tipului ales. Arborele va avansa in 
+adancime doar daca se alege aleator o functie al carui prim parametru
+are acelasi tip cu cel intors de functie. 
+
+
+--modify
+
+Functia modify verifica daca tipul lui new este compatibil cu cel al lui
+ast. Daca nu exista compatibilitate de tip atunci intorc ast nemodificat.
+Compatibilitatea de tip se verifica apeland functia type.
+Aceasta primeste ca parametru un ast si face doua verificari:
+1. Daca individul e terminal(face parte din lista terminalilor) atunci aflu tipul sau astfel: filtrez terminalii
+dupa valoare, il aleg pe primul (chiar daca sunt mai multi terminali cu aceeasi valoare
+si tipuri diferite), apoi returnez al doilea element din lista unui terminal--acesta reprezinta
+tipul sau. 
+2. Daca individul nu este terminal atunci el este un subarbore--o lista cu 3 elemente--
+primul element al acestei liste este numele functiei. Avand numele functiei, filtrez functiile
+dupa nume--primul element din lista care reprezinta o functie-- si o aleg pe prima, iar tipul
+sau este al doilea element al listei care defineste o functie.
+
+--modify-random
+
+Functia modify-random procedeaza la fel ca modify-random, verificand daca tipurile lui
+new si ast sunt compatibile atunci cand se ajunge la radacina. 
+Daca nu exista compatibilitate de tip atunci intorc ast nemodificat.
+
+
+BONUS:
+Am adaugat in lista de terminali 2 elipse subtiri(care l-ar putea compune pe lambda),
+mai multe cerculete albastre si rosii. Am pus mai mult cerculete albastre si rosii pentru ca ele
+ar trebui sa fie mai multe si sa cresc astfel probabilitatea alegerii lor.
+In lista de functii am adaugat functiile overlay si beside.
+
+
+Precizari: Din pacate, nu am reusit sa rulez pe laptop-ul meu pentru valori foarte mari ale populatiei
+si un numar mare de generatii din motive obiective. Am atasat cea mai buna aproximare obtinuta pentru
+populatie 100 si 500 de generatii.
+De asemenea, am micsorat parsimony-coefficient, dar totusi nu am obtinut rezultate mai bune.
+
+
+
+
+ 
